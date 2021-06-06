@@ -1,0 +1,51 @@
+[{
+  "_id": {
+    "$oid": "607beb3e9e192646ec7412fb"
+  },
+  "createdAt": {
+    "$date": "2021-04-18T08:16:06.744Z"
+  },
+  "name": "koko akof",
+  "email": "koko@walla.com",
+  "password": "$2b$10$QXH7f/CSsz.fjkUxCwJEHefyXDZDkH4v6oYXPfE3bkJwPPaVd.nzO",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "607e73881f75122640f05a0f"
+  },
+  "createdAt": {
+    "$date": "2021-04-20T06:21:46.011Z"
+  },
+  "name": "biden",
+  "email": "biden@walla.com",
+  "password": "$2b$10$uYOk7vOStlJgBbDtEAhZG.ZZgoO9L1oYihlHg/r2sPzRE601024Ua",
+  "__v": 0,
+  "cards": [
+    "624873",
+    "21060",
+    "132512",
+    "299886"
+  ]
+},{
+  "_id": {
+    "$oid": "607eb6f70931002e08af30df"
+  },
+  "createdAt": {
+    "$date": "2021-04-20T11:10:58.265Z"
+  },
+  "name": "trump",
+  "email": "trump@walla.com",
+  "password": "$2b$10$k0d9i55JV6ETtH6u7UNqxeqphrjZ4dvZ4pIaV9j8wAppav5yG36LS",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "60811851bda3f7361c03d2c9"
+  },
+  "createdAt": {
+    "$date": "2021-04-22T06:25:04.524Z"
+  },
+  "name": "obama",
+  "email": "obama@walla.com",
+  "password": "$2b$10$sgK5iCJnTt.QLYs4uWyr2OMPmE20PEmODyax9TbFLZsT1y4zmhgH2",
+  "__v": 0
+}]
