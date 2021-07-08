@@ -17,9 +17,9 @@ router.get("/",async(req,res) => {
 router.get("/userInfo", authToken ,async(req,res) => {
   try{
     console.log(req.tokenData)
-    // שאילתא של הוצאת מידע על היוזר לפי האיי די שאספנו מהטוקן
-    //{password:0} אומר להציג את כל המאפיינים חוץ מאת הסיסמא
-    // req.decodeToken - מגיע מהמידל וואר של האוט שורה 13
+    // getting user data accordind to id from token
+    //{password:0} show everything but password
+    // req.decodeToken - from middleware
     let data = await UserModel.findOne({_id:req.tokenData._id},{password:0});
     res.json(data);
   }
@@ -28,24 +28,19 @@ router.get("/userInfo", authToken ,async(req,res) => {
     res.status(400).json(err)
   }
 })
-
-// בודק אם הטוקן תקין ומחזיר סטטוס או קיי
-// ראוט שלא עובר דרך הדאטא בייס
+// if valid token than set status to ok
 router.get("/authUser" , authToken , (req,res) => {
   res.json({status:"ok"});
 })
 
-// ישלוף את כל הקלפים שהמשתמש עשה להם לייק/פייבופריט בבקשת פאץ
-// תיהיה כאן בקשה כפולה גם קודם נשלוף את המערך מהמשתמש ולאחר מכן נדבר עם
-// הקארד מודל ונשלוף את כל הקלפים שהספיר ביז מתאימים לרשומות שלהם
+// יget all favorite cards of the user
 router.get("/userCardsFav", authToken , async(req,res) => {
   try{
-    // קודם שולפים את המערך של המספרי כרטיסים
+    // getting array of user cards
     let user = await UserModel.findOne({_id:req.tokenData._id});
-    // cards_ar -> ["0000","11111","22222"] דוגמא מה קיבלנו מהבקשה בשורה למעלה
+    // cards_ar -> ["0000","11111","22222"] example of result of previous line
     let cards_ar = user.cards;
-    // ואז שולפים מהקולקשן של הקארדס רק את הקלפים שנמצאים במערך ששלפנו
-    // בשורות הקודמות
+    // וnow going to cards and finding those cards by ids from cards_ar
     let userCards = await CardModel.find({bizNumber: { $in:cards_ar}})
     res.json(userCards);
   }
@@ -56,7 +51,7 @@ router.get("/userCardsFav", authToken , async(req,res) => {
 })
 
 
-// מעדכן את הכרטיסים שהמשתמש עשה להם פייבוריט
+// updates cards that user liked
 router.patch("/cards", authToken, async(req,res) => {
   let validBody = validCardsArray(req.body);
   if(validBody.error){
@@ -72,7 +67,7 @@ router.patch("/cards", authToken, async(req,res) => {
   }
 })
 
-// הוספת יוזר חדש
+// adding user
 router.post("/",async(req,res) => {
   let validBody = validUser(req.body);
   if(validBody.error){
@@ -81,16 +76,15 @@ router.post("/",async(req,res) => {
   try{
     let user = new UserModel(req.body);
 
-    // מצפין את הסיסמא ברמה של 10 
+    // codding the password up to level 10  
     user.password = await bcrypt.hash(user.password, 10);
 
     await user.save();
     res.status(201).json(pick(user,["name","email","_id","createdAt"]));
   }
-  catch(err){
-    // במקרה שלנו יכול להגיע לקץ' גם אם יש משתמש עם מייל 
-    // כזה במערכת 
+  catch(err){ 
     if(err.code == 11000){
+      //if already exists(we have unique email in db)
       return res.status(400).json({err:"User/Email already in system! try to log in", code:11000})
     }
     console.log(err)
@@ -98,26 +92,25 @@ router.post("/",async(req,res) => {
   }
 })
 
-// בספר במקפוס שמים את הרואט הנל בקובץ שנקרא אוט
 router.post("/login",async(req,res) => {
   let validBody = validLogin(req.body);
   if(validBody.error){
     return res.status(400).json(validBody.error.details);
   }
   try{
-    // בודקים אם בכלל יש משתמש עם מייל כזה
+    // checking if there is a user with such email
     let user = await UserModel.findOne({email:req.body.email});
     if(!user){
-      // מחזיר הודעת שגיאה שמשתמש לא נמצא
+      // if there is no user with this email returns error
       return res.status(401).json("User or password not found 1");
     }
     // console.log(user)
-    // בודק אם הסיסמא תקינה
+    // checking password
     let validPass = await bcrypt.compare(req.body.password,user.password);
     if(!validPass){
       return res.status(401).json("User or password not found 2");
     }
-    // לייצר טוקן
+    // creating token
     let newToken = getToken(user._id)
     res.json({token:newToken});
 
