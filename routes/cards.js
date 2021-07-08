@@ -7,16 +7,14 @@ router.get("/", async (req, res) => {
   try {
     let perPage = (req.query.perPage) ? Number(req.query.perPage) : 5;
     let page = (req.query.page) ? Number(req.query.page) : 0;
-    // מגדיר לפי מה למיין
     let sort = (req.query.sort) ? req.query.sort : "_id" ;
-    // מגדיר שאם מקבל ריוורס ייס יציג מהגדול לקטן ואם לא הפוך
+    // if reverse changes direction of sort  
     let reverse = (req.query.reverse == "yes") ? -1 : 1;
     let data = await CardModel.find({})
       .limit(perPage)
-      .skip(page * perPage)
-      // [sort] -> מביא את הקיי שהוא בתוך המשתנה של סורט ולא את הקיי סורט
+      .skip(page * perPage) 
       .sort({ [sort]: reverse });
-    // .sort({_id:-1}) // ידאג שהרשומה האחרונה תוצג ראשונה
+    // .sort({_id:-1}) // the last added will be despayed first
     res.json(data);
   }
   catch (err) {
@@ -26,8 +24,8 @@ router.get("/", async (req, res) => {
   // res.json({msg:"cards work"});
 })
 
-// מחזיר את כמות הרשומות בקולקשן קארדס
-// צריכים את זה בשביל הפייג'ניישן
+// number of cards
+// for pagination
 router.get("/totalCards",async(req,res) => {
   try{
     let data = await CardModel.countDocuments({});
@@ -73,26 +71,18 @@ router.get("/single/:cardId" , async(req,res) => {
 
 
 // add new card
-// checkIfBiz -> מידל וואר שבדוק שהמשתמש הוא עסק ולא משתמש רגיל
+// checkIfBiz -> middleware that checks if this user is biz
 router.post("/", authToken , checkIfBiz, async (req, res) => {
   let validBody = validCard(req.body);
   if (validBody.error) {
     return res.status(400).json(validBody.error.details);
   }
   try {
-    
-    //אפשרות א
-    // יעשה קודם בקשה ליוזר מודל שבודק ששהמתמש הוא עסק במיידל וואר
-    // אפשרות ב
-    // ניתן לייצר בטוקן מאפיין נוסף שמכיל חוץ מאיי די את הביז
-    // אנחנו הלכנו על האפשרות א
-
-
     let card = new CardModel(req.body);
-    // מוסיפים מאפיין של האיי די של המשתמש
-    // לפני השמירה במסד
+    // adding user_id from token to the card properties 
+    // before saving to db
     card.user_id = req.tokenData._id;
-    // נייצר מספר עסק מ 1 עד 999999
+    // creating biz id from 1 to 999999
     card.bizNumber = await genBizNumber(CardModel);
     await card.save();
     res.status(201).json(card);
@@ -107,11 +97,9 @@ router.post("/", authToken , checkIfBiz, async (req, res) => {
 router.delete("/:idDel", authToken, async (req, res) => {
   let idDel = req.params.idDel;
   try {
-    // בשביל אבטחה אנחנו בודקים גם שאיי די שווה לפרמטר שקיבלנו מהיו אר אל
-    // אבל גם בודקים שהרשומה היוזר איי די שלה שווה לאיי די שמוצפן בטוקן
-    // שנשלח עם הבקשה
+    // only if user_id from card = id from token than this user may delete this card
     let data = await CardModel.deleteOne({ _id: idDel , user_id:req.tokenData._id });
-    // אם הצליח נקבל אן שווה 1
+    // if success->1
     res.json(data);
   }
   catch (err) {
@@ -127,10 +115,9 @@ router.put("/:idEdit", authToken, async (req, res) => {
     return res.status(400).json(validBody.error.details);
   }
   try {
-    // יוכל לערוך רק רשומה שהיוזר איי די שלה שווה למידע של האיי די 
-    // שנשלח עם הטוקן
+    // only if user_id from card = id from token than this user may edit
     let data = await CardModel.updateOne({ _id: idEdit , user_id:req.tokenData._id }, req.body);
-    // אם הצליח נקבל אן שווה 1
+    // if success->1
     res.json(data);
   }
   catch (err) {
