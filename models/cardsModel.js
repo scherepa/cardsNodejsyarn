@@ -24,15 +24,15 @@ exports.validCard = (_dataBody) => {
     bizDescription:Joi.string().min(2).max(500).required(),
     bizAddress:Joi.string().min(2).max(200).required(),
     bizPhone:Joi.string().min(2).max(20).required(),
-    // allow -> מאפשר גם לשלוח סטרינג ריק או בכלל לא לשלוח
+    // allow -> allows to send empty (string) or not to send at all
     bizImage:Joi.string().max(200).allow(null, '')
     
   })
 
   return joiSchema.validate(_dataBody)
 }
-
-// מייצר מספר רנדומלי ובודק שלא קיים ולא שייך לעסק אחר בקולקשן
+// creates random number from 1 up to 999999
+// if such bizNumber exists than going back to while and if no than returns generated number
 exports.genBizNumber = async(CardModel) => {
   while(true){
     let randomNum = random(1,999999);
