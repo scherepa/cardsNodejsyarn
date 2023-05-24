@@ -1,3 +1,3 @@
 exports.config = {
-  jwtSecret:"MonkeysSecret"
+  jwtSecret:process.env.SECRETJ
 }
